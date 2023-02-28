@@ -4,6 +4,8 @@ import time
 # import cv2
 import sqlite3
 from datetime import datetime, date
+from icons.LogoMod import APP_ICON
+
 
 class Storage:
     def __init__(self, dbName="logging.db") -> None:
@@ -47,9 +49,16 @@ class StopWatch(QtCore.QThread):
     timeSeconds = QtCore.Signal(int)
     recordSave = QtCore.Signal(int)
 
+    def dateString(self):
+        year_ = datetime.now().year
+        month_ = datetime.now().month
+        day_ = datetime.now().day
+        return f"{year_}-{month_}-{day_}"
+
     def handler(self, useAI=False, AIQuality=14, time_=0):
         self.cascPath = "classifier.xml"
         self.Consumed_Time = time_
+        self.StartDate = self.dateString()
         self.useAI = useAI
         self.AIQuality = AIQuality
         self.LOOPCTRL = True
@@ -93,6 +102,10 @@ class StopWatch(QtCore.QThread):
             # video_capture.release()
         else:
             while self.LOOPCTRL:
+                currentDate = self.dateString()
+                if str(self.StartDate) != str(currentDate):
+                    self.Consumed_Time = 0
+
                 if self.LOOPCTRL is False:
                     break
                 time.sleep(1)
@@ -130,16 +143,34 @@ class S_MainWindow(QtWidgets.QMainWindow):
     
     def mouseMoveEvent(self, event):
         if event.buttons() == Qt.LeftButton:
-            new_pos = event.globalPos()
-            self.move(new_pos - self.offset)
+            if self.isFullScreen() is False:
+                new_pos = event.globalPos()
+                self.move(new_pos - self.offset)
+    
+    def mouseDoubleClickEvent(self, event) -> None:
+        if event.button() == Qt.LeftButton:
+            self.showFullScreen()
+        elif event.button() == Qt.RightButton:
+            self.showNormal()
+
+    def keyPressEvent(self, event) -> None:
+        if event.key() == Qt.Key_Escape:
+            self.showNormal()
 
 
 class Time_Tracker(object):
-    def setupUi(self, MainWindow, use_ai, use_cache, settings_file):
+
+    dayChangeReset = QtCore.Signal(str)
+
+    def mainApp(self, MainWindow, use_ai, use_cache, settings_file):
         self.useAI_ = use_ai
         self.useCache = use_cache
         self.settingsFile = settings_file
         self.MainWindow = MainWindow
+        windowICON = QtGui.QPixmap()
+        windowICON.loadFromData(APP_ICON)
+        self.MainWindow.setWindowIcon(windowICON)
+        self.MainWindow.setWindowTitle("Tracker")
         self.Settings__ = self.loadSettings(self.settingsFile)
         self.centralwidget = QtWidgets.QWidget(self.MainWindow)
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -276,7 +307,6 @@ class Time_Tracker(object):
         self.timeLabelStopWatch.setText(value)
     
     def onPauseTime(self, seconds):
-        print(seconds)
         self.TotalTime = seconds
     
     def loadRecord(self):
@@ -293,6 +323,7 @@ class Time_Tracker(object):
         year_ = datetime.now().year
         month_ = datetime.now().month
         day_ = datetime.now().day
+
         self.Storageobj.record(year_, month_, day_, value)
 
     def commands(self):
@@ -301,7 +332,6 @@ class Time_Tracker(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.timeLabelStopWatch.setText(_translate("MainWindow", "00:00:00"))
         self.StartStop.setText(_translate("MainWindow", "Start"))
         self.Exit.setText(_translate("MainWindow", "X"))
@@ -356,6 +386,7 @@ class Time_Tracker(object):
                                             background-color: rgb(20, 237, 37);
                                             border:None;
                                         }''')
+            self.StartStop.setText("Start")
 
     def OnExit(self):
         if self.StopWatchObj.isRunning() is True:
@@ -390,6 +421,6 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     MW_obj = S_MainWindow()
     timetracker_obj = Time_Tracker()
-    timetracker_obj.setupUi(MW_obj, use_ai, use_cache, settings_file)
+    timetracker_obj.mainApp(MW_obj, use_ai, use_cache, settings_file)
     MW_obj.show()
     sys.exit(app.exec_())
