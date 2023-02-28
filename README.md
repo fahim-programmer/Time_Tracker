@@ -1,4 +1,4 @@
-# Time Tracker (Tracker) version 1.0.0 Release 1.0.0
+# Time Tracker (Tracker) Release 1.0.0
 
 A Time tracker application written in Python3 and PySide2. This program logs time consumed by day in a DB and for configuration it has a settings file. It saves these files in the current working directory which means you will have multiple configurations or time tracking records depending on what directory you are working in. For me these directories are projects that I am working on using this I can track how much time has been consumed without having to go into the hassle of buying 3rd party software or record time using a stopwatch.
 
@@ -81,3 +81,5 @@ Normally, these features are commented out but if you want to give it a go then 
 ### Contribution
 
 *I would like to thank [logisstudio](https://www.flaticon.com/authors/logisstudio) for providing the icon used as the application icon, many thanks. If you want this to be removed, add an issue on this repo and this will be removed from the applicaton.  Also any grammatical errors are also encourgaged to be reported, the english langauge is not my first so, errors are expected.*
+
+#### Dated: 28-Feb-2023
